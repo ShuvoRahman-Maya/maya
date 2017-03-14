@@ -24,6 +24,11 @@ class Cleaner(object):
     :param data: Data (str or unicode)
     :return: Data without the punctuation marks
     """
+
+    """
+    2404 = ।
+    55357, 56842, 55356, 57198, 57252 = emojis
+    """
     @staticmethod
     def punctuation_remover(data):
         import string
@@ -40,6 +45,9 @@ class Cleaner(object):
     def character_replacer(data):
         return data.replace('"', '').replace("'", "")
 
+    """
+    55357, 56842, 55356, 57198, 57252 = emojis
+    """
     @staticmethod
     def remove_special_character(data):
         char = {55357: u' ', 56842: u' ', 55356: u' ', 57198: u' ', 57252: u' '}
