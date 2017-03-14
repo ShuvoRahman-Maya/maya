@@ -134,3 +134,10 @@ class Decoder(object):
             return False
         else:
             return True
+
+    @staticmethod
+    def cleanhtml(raw_html):
+        import re
+        cleanr = re.compile('<.*?>')
+        cleantext = re.sub(cleanr, '', raw_html)
+        return cleantext
