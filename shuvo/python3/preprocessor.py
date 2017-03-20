@@ -1,14 +1,3 @@
-"""
-[3:10]
-you can then run a stemmer - like from TextBlob or Spacy
-
-[3:11]
-and tokenize the each row
-
-[3:11]
-so now each row is a list of tokenized words
-
-"""
 import re
 from html.parser import HTMLParser
 from html import unescape
@@ -69,7 +58,7 @@ class Preprocessor:
         import string
         try:
             remove_punctuation_map = dict((ord(char), u' ') for char in string.punctuation)
-            for i in [2404, 55357, 56842, 55356, 57198, 57252]:
+            for i in [2404, 55357, 56842, 55356, 57198, 57252, 128522]:
                 remove_punctuation_map[i] = u' '
             return data.translate(remove_punctuation_map)
         except TypeError:
@@ -77,39 +66,31 @@ class Preprocessor:
 
 
 class LanguageSeparator:
-    def
+    pass
 
-if __name__=='__main__':
-    # texts = [
-    #     "What is the 'male pillâ?",
-    #     "Dear Maya Apa,  \n   Once during a class lecture, my lecturer mentioned that talcum powder can be harmful for our ovaries. My question is, is there any link between Talcum powder and ovarian diseases?\n",
-    #     " অনেক ধন্যবাদ  \t Rota  virus সম্পর্কে বিস্তারিত   বলার জন্য। আমার বাচ্চার   বয়স এখন ২ মাস ২১ দিন তাহলে কি আমি কোন ভাবেই এখন এই টিকা দিতে পারবনা? RV5 যদি আমি ৪ মাস এবং ৬ মাসে দেয় তাহলে কি টিকা কাজ করবে ?"
-    # ]
-    # for i in texts:
-    #     print(Preprocessor.remove_extra_whitespace(i))
+
+if __name__ == '__main__':
     from database_connection import DatabaseConnection
-
     db_conn = DatabaseConnection()
     connection = db_conn.connect_to_database()
     try:
         with connection.cursor() as cursor:
             # Read a single record
-            sql = "SELECT body,source from questions where id>163100"
+            sql = "SELECT id,body,source from questions_raw where id=6778"
             cursor.execute(sql)
             result = cursor.fetchall()
-        for i in result:
-            if i['source']!='app':
-                a= i['body'].encode('latin').decode('utf-8')
-                a = Preprocessor.punctuation_remover(a)
-            else:
-                decoded_data = unescape(i['body'])
-                parser = MyHTMLParser()
-                parser.feed(decoded_data)
-                a = Preprocessor.punctuation_remover(parser.string)
-            pre = Preprocessor()
-            # print(a)
-            a = Preprocessor.tokenize(Preprocessor.remove_extra_whitespace(a))
-            logging.info(pre.replace_numbers(a))
-
+            for i in result:
+                if i['source'] != 'app':
+                    a = i['body'].encode('latin').decode('utf-8')
+                    a = Preprocessor.punctuation_remover(a)
+                else:
+                    decoded_data = unescape(i['body'])
+                    parser = MyHTMLParser()
+                    parser.feed(decoded_data)
+                    a = Preprocessor.punctuation_remover(parser.string)
+                pre = Preprocessor()
+                # lang = LanguageSeparation()
+                a = Preprocessor.remove_extra_whitespace(a)
+            print(a)
     finally:
         connection.close()
