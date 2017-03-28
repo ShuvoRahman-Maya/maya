@@ -2,19 +2,21 @@ import re
 from html.parser import HTMLParser
 from html import unescape
 import logging
+
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+
 
 class MyHTMLParser(HTMLParser):
     string = ''
 
     def handle_data(self, data):
         # \u200c zero width non zoiner
-        self.string += data.replace('\u200c','')
+        self.string += data.replace('\u200c', '')
 
 
 class Preprocessor:
-    bangla_numbers = ['০','১','২','৩','৪','৫','৬','৭','৮','৯']
-    english_numbers = ['0','1','2','3','4','5','6','7','8','9']
+    bangla_numbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
+    english_numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
     def replace_numbers(self, token_list):
         for index, item in enumerate(token_list):
@@ -32,7 +34,6 @@ class Preprocessor:
     @staticmethod
     def tokenize(text):
         return text.split(' ')
-
 
     @staticmethod
     def remove_extra_whitespace(text):
@@ -65,32 +66,48 @@ class Preprocessor:
             return None
 
 
-class LanguageSeparator:
-    pass
+class LanguageSeparation:
+    en_word_set = set()
 
+    def __init__(self):
+        with open('/Users/shuvo/Downloads/maya_article_en.txt', 'r') as file:
+            english_text = file.read()
+        english_text = english_text.split(' ')
 
-if __name__ == '__main__':
-    from database_connection import DatabaseConnection
-    db_conn = DatabaseConnection()
-    connection = db_conn.connect_to_database()
-    try:
-        with connection.cursor() as cursor:
-            # Read a single record
-            sql = "SELECT id,body,source from questions_raw where id=6778"
-            cursor.execute(sql)
-            result = cursor.fetchall()
-            for i in result:
-                if i['source'] != 'app':
-                    a = i['body'].encode('latin').decode('utf-8')
-                    a = Preprocessor.punctuation_remover(a)
-                else:
-                    decoded_data = unescape(i['body'])
-                    parser = MyHTMLParser()
-                    parser.feed(decoded_data)
-                    a = Preprocessor.punctuation_remover(parser.string)
-                pre = Preprocessor()
-                # lang = LanguageSeparation()
-                a = Preprocessor.remove_extra_whitespace(a)
-            print(a)
-    finally:
-        connection.close()
+        for word in english_text:
+            self.en_word_set.add(word)
+
+    def language_detection(self, text):
+        # input text as a string
+        # bangla = 0
+        # english = 1
+        # banglish = 2
+        size = len(text)
+        bn_count, en_count = 0, 0
+        for letter in text:
+            try:
+                letter.encode('ascii')
+            except UnicodeEncodeError:
+                bn_count += 1
+            except UnicodeError:
+                bn_count += 1
+            else:
+                en_count += 1
+        try:
+            bn_prob = float(bn_count) / size
+        except ZeroDivisionError:
+            return 'bn'
+        if bn_prob > 0.60:
+            return 'bn'
+        else:
+            words = text.split(' ')
+            no_words = len(words)
+            en_word_count = 0
+            for word in words:
+                if word in self.en_word_set:
+                    en_word_count += 1
+            en_prob = float(en_word_count) / no_words
+            if en_prob > 0.50:
+                return 'en'
+            else:
+                return 'banglish'
